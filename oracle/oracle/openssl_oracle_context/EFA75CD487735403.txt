@@ -1,0 +1,26 @@
+OSSL_QRL_ENC_LEVEL *ossl_qrl_enc_level_set_get(OSSL_QRL_ENC_LEVEL_SET *els,
+                                               uint32_t enc_level,
+                                               int require_prov)
+{
+    OSSL_QRL_ENC_LEVEL *el;
+
+    if (!ossl_assert(enc_level < QUIC_ENC_LEVEL_NUM))
+        return NULL;
+
+    el = &els->el[enc_level];
+
+    if (require_prov)
+        switch (el->state) {
+            case QRL_EL_STATE_PROV_NORMAL:
+            case QRL_EL_STATE_PROV_UPDATING:
+            case QRL_EL_STATE_PROV_COOLDOWN:
+                break;
+            default:
+                return NULL;
+        }
+
+    return el;
+}
+
+
+

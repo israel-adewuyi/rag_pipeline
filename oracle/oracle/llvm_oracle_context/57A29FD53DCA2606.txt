@@ -1,0 +1,28 @@
+  bool hasStreamingCompatibleInterface() const {
+    return Bitmask & SM_Compatible;
+  }
+  bool hasNonStreamingInterface() const {
+
+
+  bool hasNonStreamingInterfaceAndBody() const {
+    return hasNonStreamingInterface() && !hasStreamingBody();
+  }
+
+
+
+  bool hasNonStreamingInterface() const {
+    return !hasStreamingInterface() && !hasStreamingCompatibleInterface();
+  }
+  bool hasNonStreamingInterfaceAndBody() const {
+
+
+  bool hasStreamingInterfaceOrBody() const {
+    return hasStreamingBody() || hasStreamingInterface();
+  }
+  bool hasStreamingCompatibleInterface() const {
+
+
+  bool hasStreamingInterface() const { return Bitmask & SM_Enabled; }
+  bool hasStreamingInterfaceOrBody() const {
+
+

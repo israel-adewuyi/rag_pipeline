@@ -1,0 +1,44 @@
+dictIterator *dictGetSafeIterator(dict *d) {
+    dictIterator *i = dictGetIterator(d);
+
+    i->safe = 1;
+    return i;
+}
+
+
+
+void *dictGetKey(const dictEntry *de) {
+    if (entryIsKey(de)) return (void*)de;
+    if (entryIsNoValue(de)) return decodeEntryNoValue(de)->key;
+    return de->key;
+}
+
+
+
+dictEntry *dbFind(redisDb *db, void *key) {
+    return dbFindGeneric(db->keys, key);
+}
+
+
+
+void *dictGetVal(const dictEntry *de) {
+    assert(entryHasValue(de));
+    return de->v.val;
+}
+
+
+
+void signalKeyAsReady(redisDb *db, robj *key, int type) {
+    signalKeyAsReadyLogic(db, key, type, 0);
+}
+
+
+
+void dictReleaseIterator(dictIterator *iter)
+{
+    dictResetIterator(iter);
+    zfree(iter);
+}
+
+
+

@@ -1,0 +1,28 @@
+static int check_ca(const X509 *x)
+{
+    /* keyUsage if present should allow cert signing */
+    if (ku_reject(x, KU_KEY_CERT_SIGN))
+        return 0;
+    if ((x->ex_flags & EXFLAG_BCONS) != 0) {
+        /* If basicConstraints says not a CA then say so */
+        return (x->ex_flags & EXFLAG_CA) != 0;
+    } else {
+        /* We support V1 roots for...  uh, I don't really know why. */
+        if ((x->ex_flags & V1_ROOT) == V1_ROOT)
+            return 3;
+        /*
+         * If key usage present it must have certSign so tolerate it
+         */
+        else if ((x->ex_flags & EXFLAG_KUSAGE) != 0)
+            return 4;
+        /* Older certificates could have Netscape-specific CA types */
+        else if ((x->ex_flags & EXFLAG_NSCERT) != 0
+                 && (x->ex_nscert & NS_ANY_CA) != 0)
+            return 5;
+        /* Can this still be regarded a CA certificate?  I doubt it. */
+        return 0;
+    }
+}
+
+
+

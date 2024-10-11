@@ -1,0 +1,13 @@
+std::vector<Record *>
+RecordKeeper::getAllDerivedDefinitions(StringRef ClassName) const {
+  // We cache the record vectors for single classes. Many backends request
+  // the same vectors multiple times.
+  auto Pair = ClassRecordsMap.try_emplace(ClassName);
+  if (Pair.second)
+    Pair.first->second = getAllDerivedDefinitions(ArrayRef(ClassName));
+
+  return Pair.first->second;
+}
+
+
+

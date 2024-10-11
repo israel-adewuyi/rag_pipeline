@@ -1,0 +1,42 @@
+  Record *getOperator() const {
+    assert(!isLeaf());
+    return cast<Record *>(OperatorOrVal);
+  }
+
+
+
+  Record *get_intrinsic_void_sdnode() const { return intrinsic_void_sdnode; }
+  Record *get_intrinsic_w_chain_sdnode() const {
+
+
+  Record *get_intrinsic_w_chain_sdnode() const {
+    return intrinsic_w_chain_sdnode;
+  }
+  Record *get_intrinsic_wo_chain_sdnode() const {
+
+
+  Record *get_intrinsic_wo_chain_sdnode() const {
+    return intrinsic_wo_chain_sdnode;
+  }
+
+
+
+  int64_t getValue() const { return Value; }
+
+
+
+  Init *getLeafValue() const {
+    assert(isLeaf());
+    return cast<Init *>(OperatorOrVal);
+  }
+  Record *getOperator() const {
+
+
+  const CodeGenIntrinsic &getIntrinsicInfo(unsigned IID) const {
+    if (IID - 1 < Intrinsics.size())
+      return Intrinsics[IID - 1];
+    llvm_unreachable("Bad intrinsic ID!");
+  }
+
+
+

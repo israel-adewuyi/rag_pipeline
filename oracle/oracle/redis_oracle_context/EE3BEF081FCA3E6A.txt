@@ -1,0 +1,38 @@
+void freeLuaScriptsAsync(dict *lua_scripts) {
+    if (dictSize(lua_scripts) > LAZYFREE_THRESHOLD) {
+        atomicIncr(lazyfree_objects,dictSize(lua_scripts));
+        bioCreateLazyFreeJob(lazyFreeLuaScripts,1,lua_scripts);
+    } else {
+        dictRelease(lua_scripts);
+    }
+}
+
+
+
+void dictRelease(dict *d)
+{
+    _dictClear(d,0,NULL);
+    _dictClear(d,1,NULL);
+    zfree(d);
+}
+
+
+
+LUA_API void lua_close (lua_State *L) {
+  L = G(L)->mainthread;  /* only the main thread can be closed */
+  lua_lock(L);
+  luaF_close(L, L->stack);  /* close all upvalues for this thread */
+  luaC_separateudata(L, 1);  /* separate udata that have GC metamethods */
+  L->errfunc = 0;  /* no error function during GC metamethods */
+  do {  /* repeat until no more errors */
+    L->ci = L->base_ci;
+    L->base = L->top = L->ci->base;
+    L->nCcalls = L->baseCcalls = 0;
+  } while (luaD_rawrunprotected(L, callallgcTM, NULL) != 0);
+  lua_assert(G(L)->tmudata == NULL);
+  luai_userstateclose(L);
+  close_state(L);
+}
+
+
+

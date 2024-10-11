@@ -1,0 +1,65 @@
+SIMD_FORCE_INLINE btMatrix3x3
+btMatrix3x3::transpose() const
+{
+#if defined BT_USE_SIMD_VECTOR3 && (defined(BT_USE_SSE_IN_API) && defined(BT_USE_SSE))
+	__m128 v0 = m_el[0].mVec128;
+	__m128 v1 = m_el[1].mVec128;
+	__m128 v2 = m_el[2].mVec128;  //  x2 y2 z2 w2
+	__m128 vT;
+
+	v2 = _mm_and_ps(v2, btvFFF0fMask);  //  x2 y2 z2 0
+
+	vT = _mm_unpackhi_ps(v0, v1);  //	z0 z1 * *
+	v0 = _mm_unpacklo_ps(v0, v1);  //	x0 x1 y0 y1
+
+	v1 = _mm_shuffle_ps(v0, v2, BT_SHUFFLE(2, 3, 1, 3));                    // y0 y1 y2 0
+	v0 = _mm_shuffle_ps(v0, v2, BT_SHUFFLE(0, 1, 0, 3));                    // x0 x1 x2 0
+	v2 = btCastdTo128f(_mm_move_sd(btCastfTo128d(v2), btCastfTo128d(vT)));  // z0 z1 z2 0
+
+	return btMatrix3x3(v0, v1, v2);
+#elif defined(BT_USE_NEON)
+	// note: zeros the w channel. We can preserve it at the cost of two more vtrn instructions.
+	static const uint32x2_t zMask = (const uint32x2_t){static_cast<uint32_t>(-1), 0};
+	float32x4x2_t top = vtrnq_f32(m_el[0].mVec128, m_el[1].mVec128);               // {x0 x1 z0 z1}, {y0 y1 w0 w1}
+	float32x2x2_t bl = vtrn_f32(vget_low_f32(m_el[2].mVec128), vdup_n_f32(0.0f));  // {x2  0 }, {y2 0}
+	float32x4_t v0 = vcombine_f32(vget_low_f32(top.val[0]), bl.val[0]);
+	float32x4_t v1 = vcombine_f32(vget_low_f32(top.val[1]), bl.val[1]);
+	float32x2_t q = (float32x2_t)vand_u32((uint32x2_t)vget_high_f32(m_el[2].mVec128), zMask);
+	float32x4_t v2 = vcombine_f32(vget_high_f32(top.val[0]), q);  // z0 z1 z2  0
+	return btMatrix3x3(v0, v1, v2);
+#else
+	return btMatrix3x3(m_el[0].x(), m_el[1].x(), m_el[2].x(),
+					   m_el[0].y(), m_el[1].y(), m_el[2].y(),
+					   m_el[0].z(), m_el[1].z(), m_el[2].z());
+#endif
+}
+
+
+
+SIMD_FORCE_INLINE btVector3
+operator*(const btMatrix3x3& m, const btVector3& v)
+{
+#if (defined(BT_USE_SSE_IN_API) && defined(BT_USE_SSE)) || defined(BT_USE_NEON)
+	return v.dot3(m[0], m[1], m[2]);
+#else
+	return btVector3(m[0].dot(v), m[1].dot(v), m[2].dot(v));
+#endif
+}
+
+
+
+SIMD_FORCE_INLINE btVector3
+operator-(const btVector3& v)
+{
+#if defined BT_USE_SIMD_VECTOR3 && (defined(BT_USE_SSE_IN_API) && defined(BT_USE_SSE))
+	__m128 r = _mm_xor_ps(v.mVec128, btvMzeroMask);
+	return btVector3(_mm_and_ps(r, btvFFF0fMask));
+#elif defined(BT_USE_NEON)
+	return btVector3((btSimdFloat4)veorq_s32((int32x4_t)v.mVec128, (int32x4_t)btvMzeroMask));
+#else
+	return btVector3(-v.m_floats[0], -v.m_floats[1], -v.m_floats[2]);
+#endif
+}
+
+
+

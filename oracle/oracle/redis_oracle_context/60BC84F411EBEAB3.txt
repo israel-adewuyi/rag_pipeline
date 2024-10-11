@@ -1,0 +1,24 @@
+static dict *kvstoreGetDict(kvstore *kvs, int didx) {
+    return kvs->dicts[didx];
+}
+
+
+
+int kvstoreExpand(kvstore *kvs, uint64_t newsize, int try_expand, kvstoreExpandShouldSkipDictIndex *skip_cb) {
+    for (int i = 0; i < kvs->num_dicts; i++) {
+
+
+int dictTryExpand(dict *d, unsigned long size) {
+    int malloc_failed = 0;
+    _dictExpand(d, size, &malloc_failed);
+    return malloc_failed? DICT_ERR : DICT_OK;
+}
+
+
+
+int dictExpand(dict *d, unsigned long size) {
+    return _dictExpand(d, size, NULL);
+}
+
+
+

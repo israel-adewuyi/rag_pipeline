@@ -1,0 +1,18 @@
+	SIMD_FORCE_INLINE btVector3& operator*=(const btScalar& s)
+	{
+#if defined(BT_USE_SSE_IN_API) && defined(BT_USE_SSE)
+		__m128 vs = _mm_load_ss(&s);  //	(S 0 0 0)
+		vs = bt_pshufd_ps(vs, 0x80);  //	(S S S 0.0)
+		mVec128 = _mm_mul_ps(mVec128, vs);
+#elif defined(BT_USE_NEON)
+		mVec128 = vmulq_n_f32(mVec128, s);
+#else
+		m_floats[0] *= s;
+		m_floats[1] *= s;
+		m_floats[2] *= s;
+#endif
+		return *this;
+	}
+
+
+

@@ -1,0 +1,44 @@
+	B3_FORCE_INLINE void destroy(int first, int last)
+	{
+		int i;
+		for (i = first; i < last; i++)
+		{
+			m_data[i].~T();
+		}
+	}
+
+
+
+	B3_FORCE_INLINE int size() const
+	{
+		return m_size;
+	}
+
+
+
+	B3_FORCE_INLINE void deallocate()
+	{
+		if (m_data)
+		{
+			//PCK: enclosed the deallocation in this block
+			if (m_ownsMemory)
+			{
+				m_allocator.deallocate(m_data);
+			}
+			m_data = 0;
+		}
+	}
+
+
+
+	B3_FORCE_INLINE void init()
+	{
+		//PCK: added this line
+		m_ownsMemory = true;
+		m_data = 0;
+		m_size = 0;
+		m_capacity = 0;
+	}
+	B3_FORCE_INLINE void destroy(int first, int last)
+
+

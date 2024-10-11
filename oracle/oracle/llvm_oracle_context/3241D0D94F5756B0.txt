@@ -1,0 +1,4 @@
+  virtual const TargetLowering *getTargetLowering() const { return nullptr; }
+  virtual const SelectionDAGTargetInfo *getSelectionDAGInfo() const {
+
+

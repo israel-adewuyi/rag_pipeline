@@ -1,0 +1,12 @@
+static void FindDepVarsOf(TreePatternNode &N, DepVarMap &DepMap) {
+  if (N.isLeaf()) {
+    if (N.hasName() && isa<DefInit>(N.getLeafValue()))
+      DepMap[N.getName()]++;
+  } else {
+    for (size_t i = 0, e = N.getNumChildren(); i != e; ++i)
+      FindDepVarsOf(N.getChild(i), DepMap);
+  }
+}
+
+
+

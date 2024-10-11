@@ -1,0 +1,23 @@
+  raw_ostream &operator<<(const char *Str) {
+    // Inline fast path, particularly for constant strings where a sufficiently
+    // smart compiler will simplify strlen.
+
+    return this->operator<<(StringRef(Str));
+  }
+
+
+
+static void verifyRegionRec(const VPRegionBlock *Region) {
+  verifyRegion(Region);
+
+  // Recurse inside nested regions.
+  for (const VPBlockBase *VPB : make_range(
+           df_iterator<const VPBlockBase *>::begin(Region->getEntry()),
+           df_iterator<const VPBlockBase *>::end(Region->getExiting()))) {
+    if (const auto *SubRegion = dyn_cast<VPRegionBlock>(VPB))
+      verifyRegionRec(SubRegion);
+  }
+}
+
+
+

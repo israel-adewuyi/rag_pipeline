@@ -1,0 +1,7 @@
+  bool tracksLiveness() const {
+    return MF->getProperties().hasProperty(
+        MachineFunctionProperties::Property::TracksLiveness);
+  }
+
+
+

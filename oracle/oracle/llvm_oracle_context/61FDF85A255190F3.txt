@@ -1,0 +1,7 @@
+  virtual Register isLoadFromStackSlot(const MachineInstr &MI,
+                                       int &FrameIndex) const {
+    return 0;
+  }
+
+
+

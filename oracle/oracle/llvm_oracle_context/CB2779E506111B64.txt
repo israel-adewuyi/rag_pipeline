@@ -1,0 +1,22 @@
+void TargetInstrInfo::reMaterialize(MachineBasicBlock &MBB,
+                                    MachineBasicBlock::iterator I,
+                                    Register DestReg, unsigned SubIdx,
+                                    const MachineInstr &Orig,
+                                    const TargetRegisterInfo &TRI) const {
+  MachineInstr *MI = MBB.getParent()->CloneMachineInstr(&Orig);
+  MI->substituteRegister(MI->getOperand(0).getReg(), DestReg, SubIdx, TRI);
+  MBB.insert(I, MI);
+}
+
+
+
+void MachineInstr::clearRegisterDeads(Register Reg) {
+  for (MachineOperand &MO : operands()) {
+    if (!MO.isReg() || !MO.isDef() || MO.getReg() != Reg)
+      continue;
+    MO.setIsDead(false);
+  }
+}
+
+
+

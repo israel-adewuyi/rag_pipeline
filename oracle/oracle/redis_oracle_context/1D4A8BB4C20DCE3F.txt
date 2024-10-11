@@ -1,0 +1,10 @@
+unsigned long long int kvstoreSize(kvstore *kvs) {
+    if (kvs->num_dicts != 1) {
+        return kvs->key_count;
+    } else {
+        return kvs->dicts[0]? dictSize(kvs->dicts[0]) : 0;
+    }
+}
+
+
+

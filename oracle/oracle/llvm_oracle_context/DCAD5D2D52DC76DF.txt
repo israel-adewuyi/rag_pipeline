@@ -1,0 +1,6 @@
+bool SIInstrInfo::isLegalMUBUFImmOffset(unsigned Imm) const {
+  return Imm <= getMaxMUBUFImmOffset(ST);
+}
+
+
+

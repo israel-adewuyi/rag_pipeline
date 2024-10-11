@@ -1,0 +1,56 @@
+CodeGenOptLevel TargetPassConfig::getOptLevel() const {
+  return TM->getOptLevel();
+}
+
+
+
+void TargetPassConfig::addPass(Pass *P) {
+  assert(!Initialized && "PassConfig is immutable");
+
+  // Cache the Pass ID here in case the pass manager finds this pass is
+  // redundant with ones already scheduled / available, and deletes it.
+  // Fundamentally, once we add the pass to the manager, we no longer own it
+  // and shouldn't reference it.
+  AnalysisID PassID = P->getPassID();
+
+  if (StartBefore == PassID && StartBeforeCount++ == StartBeforeInstanceNum)
+    Started = true;
+  if (StopBefore == PassID && StopBeforeCount++ == StopBeforeInstanceNum)
+    Stopped = true;
+  if (Started && !Stopped) {
+    if (AddingMachinePasses) {
+      // Construct banner message before PM->add() as that may delete the pass.
+      std::string Banner =
+          std::string("After ") + std::string(P->getPassName());
+      addMachinePrePasses();
+      PM->add(P);
+      addMachinePostPasses(Banner);
+    } else {
+      PM->add(P);
+    }
+
+    // Add the passes after the pass P if there is any.
+    for (const auto &IP : Impl->InsertedPasses)
+      if (IP.TargetPassID == PassID)
+        addPass(IP.getInsertedPass());
+  } else {
+    delete P;
+  }
+
+  if (StopAfter == PassID && StopAfterCount++ == StopAfterInstanceNum)
+    Stopped = true;
+
+  if (StartAfter == PassID && StartAfterCount++ == StartAfterInstanceNum)
+    Started = true;
+  if (Stopped && !Started)
+    report_fatal_error("Cannot stop compilation after pass that is not run");
+}
+
+
+
+FunctionPass *llvm::createCodeGenPrepareLegacyPass() {
+  return new CodeGenPrepareLegacyPass();
+}
+
+
+

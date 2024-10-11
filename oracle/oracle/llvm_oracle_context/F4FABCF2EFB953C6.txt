@@ -1,0 +1,6 @@
+  VariableID insertVariable(DebugVariable V) {
+    return static_cast<VariableID>(Variables.insert(V));
+  }
+
+
+

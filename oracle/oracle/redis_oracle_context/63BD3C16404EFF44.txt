@@ -1,0 +1,55 @@
+LUA_API void lua_setfield (lua_State *L, int idx, const char *k) {
+  StkId t;
+  TValue key;
+  lua_lock(L);
+  api_checknelems(L, 1);
+  t = index2adr(L, idx);
+  api_checkvalidindex(L, t);
+  setsvalue(L, &key, luaS_new(L, k));
+  luaV_settable(L, t, &key, L->top - 1);
+  L->top--;  /* pop value */
+  lua_unlock(L);
+}
+
+
+
+LUA_API int lua_setmetatable (lua_State *L, int objindex) {
+  TValue *obj;
+  Table *mt;
+  lua_lock(L);
+  api_checknelems(L, 1);
+  obj = index2adr(L, objindex);
+  api_checkvalidindex(L, obj);
+  if (ttisnil(L->top - 1))
+    mt = NULL;
+  else {
+    api_check(L, ttistable(L->top - 1));
+    mt = hvalue(L->top - 1);
+  }
+  switch (ttype(obj)) {
+    case LUA_TTABLE: {
+      if (hvalue(obj)->readonly)
+        luaG_runerror(L, "Attempt to modify a readonly table");
+      hvalue(obj)->metatable = mt;
+      if (mt)
+        luaC_objbarriert(L, hvalue(obj), mt);
+      break;
+    }
+    case LUA_TUSERDATA: {
+      uvalue(obj)->metatable = mt;
+      if (mt)
+        luaC_objbarrier(L, rawuvalue(obj), mt);
+      break;
+    }
+    default: {
+      G(L)->mt[ttype(obj)] = mt;
+      break;
+    }
+  }
+  L->top--;
+  lua_unlock(L);
+  return 1;
+}
+
+
+

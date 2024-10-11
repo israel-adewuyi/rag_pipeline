@@ -1,0 +1,42 @@
+	btScalar cofac(int r1, int c1, int r2, int c2) const
+	{
+		return m_el[r1][c1] * m_el[r2][c2] - m_el[r1][c2] * m_el[r2][c1];
+	}
+
+
+
+	SIMD_FORCE_INLINE btScalar dot(const btVector3& v) const
+	{
+#if defined BT_USE_SIMD_VECTOR3 && defined(BT_USE_SSE_IN_API) && defined(BT_USE_SSE)
+		__m128 vd = _mm_mul_ps(mVec128, v.mVec128);
+		__m128 z = _mm_movehl_ps(vd, vd);
+		__m128 y = _mm_shuffle_ps(vd, vd, 0x55);
+		vd = _mm_add_ss(vd, y);
+		vd = _mm_add_ss(vd, z);
+		return _mm_cvtss_f32(vd);
+#elif defined(BT_USE_NEON)
+		float32x4_t vd = vmulq_f32(mVec128, v.mVec128);
+		float32x2_t x = vpadd_f32(vget_low_f32(vd), vget_low_f32(vd));
+		x = vadd_f32(x, vget_high_f32(vd));
+		return vget_lane_f32(x, 0);
+#else
+		return m_floats[0] * v.m_floats[0] +
+			   m_floats[1] * v.m_floats[1] +
+			   m_floats[2] * v.m_floats[2];
+#endif
+	}
+
+
+
+	SIMD_FORCE_INLINE const btScalar& x() const { return m_floats[0]; }
+	/**@brief Return the y value */
+
+
+	SIMD_FORCE_INLINE const btScalar& y() const { return m_floats[1]; }
+	/**@brief Return the z value */
+
+
+	SIMD_FORCE_INLINE const btScalar& z() const { return m_floats[2]; }
+	/**@brief Return the w value */
+
+

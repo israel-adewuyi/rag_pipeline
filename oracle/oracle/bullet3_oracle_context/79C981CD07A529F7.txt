@@ -1,0 +1,11 @@
+	void setValue(const b3Scalar& xx, const b3Scalar& xy, const b3Scalar& xz,
+				  const b3Scalar& yx, const b3Scalar& yy, const b3Scalar& yz,
+				  const b3Scalar& zx, const b3Scalar& zy, const b3Scalar& zz)
+	{
+		m_el[0].setValue(xx, xy, xz);
+		m_el[1].setValue(yx, yy, yz);
+		m_el[2].setValue(zx, zy, zz);
+	}
+
+
+

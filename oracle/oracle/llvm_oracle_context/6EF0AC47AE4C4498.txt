@@ -1,0 +1,57 @@
+  bool isLeaf() const { return isa<Init *>(OperatorOrVal); }
+
+
+
+  bool isSubClassOf(StringRef Name) const {
+    for (const auto &SCPair : SuperClasses) {
+      if (const auto *SI = dyn_cast<StringInit>(SCPair.first->getNameInit())) {
+        if (SI->getValue() == Name)
+          return true;
+      } else if (SCPair.first->getNameInitAsString() == Name) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+
+
+  Record *getOperator() const {
+    assert(!isLeaf());
+    return cast<Record *>(OperatorOrVal);
+  }
+
+
+
+  unsigned getNumChildren() const { return Children.size(); }
+  const TreePatternNode &getChild(unsigned N) const {
+
+
+static void getInstructionsInTree(TreePatternNode &Tree,
+                                  SmallVectorImpl<Record *> &Instrs) {
+  if (Tree.isLeaf())
+    return;
+  if (Tree.getOperator()->isSubClassOf("Instruction"))
+    Instrs.push_back(Tree.getOperator());
+  for (unsigned i = 0, e = Tree.getNumChildren(); i != e; ++i)
+    getInstructionsInTree(Tree.getChild(i), Instrs);
+}
+
+
+
+  TreePatternNode &getChild(unsigned N) { return *Children[N].get(); }
+  const TreePatternNodePtr &getChildShared(unsigned N) const {
+
+
+static void getInstructionsInTree(TreePatternNode &Tree,
+                                  SmallVectorImpl<Record *> &Instrs) {
+  if (Tree.isLeaf())
+    return;
+  if (Tree.getOperator()->isSubClassOf("Instruction"))
+    Instrs.push_back(Tree.getOperator());
+  for (unsigned i = 0, e = Tree.getNumChildren(); i != e; ++i)
+    getInstructionsInTree(Tree.getChild(i), Instrs);
+}
+
+
+

@@ -1,0 +1,19 @@
+std::vector<ValidReloc> DwarfLinkerForBinary::AddressManager::getRelocations(
+    const std::vector<ValidReloc> &Relocs, uint64_t StartPos, uint64_t EndPos) {
+  std::vector<ValidReloc> Res;
+
+  auto CurReloc = partition_point(Relocs, [StartPos](const ValidReloc &Reloc) {
+    return (uint64_t)Reloc.Offset < StartPos;
+  });
+
+  while (CurReloc != Relocs.end() && CurReloc->Offset >= StartPos &&
+         (uint64_t)CurReloc->Offset < EndPos) {
+    Res.push_back(*CurReloc);
+    CurReloc++;
+  }
+
+  return Res;
+}
+
+
+

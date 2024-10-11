@@ -1,0 +1,15 @@
+const char *evp_keymgmt_util_query_operation_name(EVP_KEYMGMT *keymgmt,
+                                                  int op_id)
+
+
+    OSSL_FUNC_keymgmt_query_operation_name_fn *query_operation_name;
+    OSSL_FUNC_keymgmt_has_fn *has;
+
+
+const char *EVP_KEYMGMT_get0_name(const EVP_KEYMGMT *keymgmt)
+{
+    return keymgmt->type_name;
+}
+
+
+

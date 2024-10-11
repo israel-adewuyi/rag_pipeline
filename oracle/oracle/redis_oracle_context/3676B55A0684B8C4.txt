@@ -1,0 +1,22 @@
+list *listAddNodeTail(list *list, void *value)
+{
+    listNode *node;
+
+    if ((node = zmalloc(sizeof(*node))) == NULL)
+        return NULL;
+    node->value = value;
+    listLinkNodeTail(list, node);
+    return list;
+}
+
+
+
+void dictRehashingInfo(dict *d, unsigned long long *from_size, unsigned long long *to_size) {
+    /* Invalid method usage if rehashing isn't ongoing. */
+    assert(dictIsRehashing(d));
+    *from_size = DICTHT_SIZE(d->ht_size_exp[0]);
+    *to_size = DICTHT_SIZE(d->ht_size_exp[1]);
+}
+
+
+

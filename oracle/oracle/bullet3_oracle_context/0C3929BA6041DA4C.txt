@@ -1,0 +1,17 @@
+	SIMD_FORCE_INLINE bool needsBroadphaseCollision(btBroadphaseProxy * proxy0, btBroadphaseProxy * proxy1) const
+	{
+		if (m_overlapFilterCallback)
+			return m_overlapFilterCallback->needBroadphaseCollision(proxy0, proxy1);
+
+		bool collides = (proxy0->m_collisionFilterGroup & proxy1->m_collisionFilterMask) != 0;
+		collides = collides && (proxy1->m_collisionFilterGroup & proxy0->m_collisionFilterMask);
+
+		return collides;
+	}
+
+
+
+	btBroadphasePair* internalAddPair(btBroadphaseProxy * proxy0, btBroadphaseProxy * proxy1);
+
+
+

@@ -1,0 +1,4 @@
+	SIMD_FORCE_INLINE operator const btScalar*() const { return &m_floats[0]; }
+
+
+

@@ -1,0 +1,28 @@
+static int txp_check_token_len(size_t token_len, size_t mdpl)
+{
+    if (token_len == 0)
+        return 1;
+
+    if (token_len >= mdpl)
+        return 0;
+
+    if (TXP_REQUIRED_TOKEN_MARGIN >= mdpl)
+        /* (should not be possible because MDPL must be at least 1200) */
+        return 0;
+
+    if (token_len > mdpl - TXP_REQUIRED_TOKEN_MARGIN)
+        return 0;
+
+    return 1;
+}
+
+
+
+int ossl_quic_tx_packetiser_set_initial_token(OSSL_QUIC_TX_PACKETISER *txp,
+                                              const unsigned char *token,
+
+
+    ossl_quic_initial_token_free_fn *initial_token_free_cb;
+    void                            *initial_token_free_cb_arg;
+
+

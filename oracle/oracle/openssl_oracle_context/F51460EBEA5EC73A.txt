@@ -1,0 +1,63 @@
+int tls13_export_keying_material_early(SSL_CONNECTION *s,
+                                       unsigned char *out, size_t olen,
+                                       const char *label, size_t llen,
+                                       const unsigned char *context,
+                                       size_t contextlen)
+{
+    /* ASCII: "exporter", in hex for EBCDIC compatibility */
+    static const unsigned char exporterlabel[] = "\x65\x78\x70\x6F\x72\x74\x65\x72";
+    unsigned char exportsecret[EVP_MAX_MD_SIZE];
+    unsigned char hash[EVP_MAX_MD_SIZE], data[EVP_MAX_MD_SIZE];
+    const EVP_MD *md;
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    unsigned int hashsize, datalen;
+    int ret = 0;
+    const SSL_CIPHER *sslcipher;
+
+    if (ctx == NULL || !ossl_statem_export_early_allowed(s))
+        goto err;
+
+    if (!s->server && s->max_early_data > 0
+            && s->session->ext.max_early_data == 0)
+        sslcipher = SSL_SESSION_get0_cipher(s->psksession);
+    else
+        sslcipher = SSL_SESSION_get0_cipher(s->session);
+
+    md = ssl_md(SSL_CONNECTION_GET_CTX(s), sslcipher->algorithm2);
+
+    /*
+     * Calculate the hash value and store it in |data|. The reason why
+     * the empty string is used is that the definition of TLS-Exporter
+     * is like so:
+     *
+     * TLS-Exporter(label, context_value, key_length) =
+     *     HKDF-Expand-Label(Derive-Secret(Secret, label, ""),
+     *                       "exporter", Hash(context_value), key_length)
+     *
+     * Derive-Secret(Secret, Label, Messages) =
+     *       HKDF-Expand-Label(Secret, Label,
+     *                         Transcript-Hash(Messages), Hash.length)
+     *
+     * Here Transcript-Hash is the cipher suite hash algorithm.
+     */
+    if (md == NULL
+            || EVP_DigestInit_ex(ctx, md, NULL) <= 0
+            || EVP_DigestUpdate(ctx, context, contextlen) <= 0
+            || EVP_DigestFinal_ex(ctx, hash, &hashsize) <= 0
+            || EVP_DigestInit_ex(ctx, md, NULL) <= 0
+            || EVP_DigestFinal_ex(ctx, data, &datalen) <= 0
+            || !tls13_hkdf_expand(s, md, s->early_exporter_master_secret,
+                                  (const unsigned char *)label, llen,
+                                  data, datalen, exportsecret, hashsize, 0)
+            || !tls13_hkdf_expand(s, md, exportsecret, exporterlabel,
+                                  sizeof(exporterlabel) - 1, hash, hashsize,
+                                  out, olen, 0))
+        goto err;
+
+    ret = 1;
+ err:
+    EVP_MD_CTX_free(ctx);
+    return ret;
+}
+
+

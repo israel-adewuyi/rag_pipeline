@@ -1,0 +1,11 @@
+CodeGenRegister *CodeGenRegBank::getReg(Record *Def) {
+  CodeGenRegister *&Reg = Def2Reg[Def];
+  if (Reg)
+    return Reg;
+  Registers.emplace_back(Def, Registers.size() + 1);
+  Reg = &Registers.back();
+  return Reg;
+}
+
+
+

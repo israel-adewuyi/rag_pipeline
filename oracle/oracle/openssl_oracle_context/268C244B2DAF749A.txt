@@ -1,0 +1,65 @@
+static ossl_inline int ring_buf_init(struct ring_buf *r)
+{
+    r->start = NULL;
+    r->alloc = 0;
+    r->head_offset = r->ctail_offset = 0;
+    return 1;
+}
+
+
+
+static ossl_inline int ring_buf_resize(struct ring_buf *r, size_t num_bytes,
+                                       int cleanse)
+{
+    struct ring_buf rnew = {0};
+    const unsigned char *src = NULL;
+    size_t src_len = 0, copied = 0;
+
+    if (num_bytes == r->alloc)
+        return 1;
+
+    if (num_bytes < ring_buf_used(r))
+        return 0;
+
+    rnew.start = OPENSSL_malloc(num_bytes);
+    if (rnew.start == NULL)
+        return 0;
+
+    rnew.alloc          = num_bytes;
+    rnew.head_offset    = r->head_offset - ring_buf_used(r);
+    rnew.ctail_offset   = rnew.head_offset;
+
+    for (;;) {
+        if (!ring_buf_get_buf_at(r, r->ctail_offset + copied, &src, &src_len)) {
+            OPENSSL_free(rnew.start);
+            return 0;
+        }
+
+        if (src_len == 0)
+            break;
+
+        if (ring_buf_push(&rnew, src, src_len) != src_len) {
+            OPENSSL_free(rnew.start);
+            return 0;
+        }
+
+        copied += src_len;
+    }
+
+    assert(rnew.head_offset == r->head_offset);
+    rnew.ctail_offset = r->ctail_offset;
+
+    ring_buf_destroy(r, cleanse);
+    memcpy(r, &rnew, sizeof(*r));
+    return 1;
+}
+
+
+
+void ossl_sframe_list_init(SFRAME_LIST *fl)
+{
+    memset(fl, 0, sizeof(*fl));
+}
+
+
+

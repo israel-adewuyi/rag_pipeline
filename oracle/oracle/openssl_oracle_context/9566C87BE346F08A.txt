@@ -1,0 +1,56 @@
+static void ch_cleanup(QUIC_CHANNEL *ch)
+{
+    uint32_t pn_space;
+
+    if (ch->ackm != NULL)
+        for (pn_space = QUIC_PN_SPACE_INITIAL;
+             pn_space < QUIC_PN_SPACE_NUM;
+             ++pn_space)
+            ossl_ackm_on_pkt_space_discarded(ch->ackm, pn_space);
+
+    ossl_quic_lcidm_cull(ch->lcidm, ch);
+    ossl_quic_srtm_cull(ch->srtm, ch);
+    ossl_quic_tx_packetiser_free(ch->txp);
+    ossl_quic_txpim_free(ch->txpim);
+    ossl_quic_cfq_free(ch->cfq);
+    ossl_qtx_free(ch->qtx);
+    if (ch->cc_data != NULL)
+        ch->cc_method->free(ch->cc_data);
+    if (ch->have_statm)
+        ossl_statm_destroy(&ch->statm);
+    ossl_ackm_free(ch->ackm);
+
+    if (ch->have_qsm)
+        ossl_quic_stream_map_cleanup(&ch->qsm);
+
+    for (pn_space = QUIC_PN_SPACE_INITIAL; pn_space < QUIC_PN_SPACE_NUM; ++pn_space) {
+        ossl_quic_sstream_free(ch->crypto_send[pn_space]);
+        ossl_quic_rstream_free(ch->crypto_recv[pn_space]);
+    }
+
+    ossl_qrx_pkt_release(ch->qrx_pkt);
+    ch->qrx_pkt = NULL;
+
+    ossl_quic_tls_free(ch->qtls);
+    ossl_qrx_free(ch->qrx);
+    OPENSSL_free(ch->local_transport_params);
+    OPENSSL_free((char *)ch->terminate_cause.reason);
+    OSSL_ERR_STATE_free(ch->err_state);
+    OPENSSL_free(ch->ack_range_scratch);
+
+    if (ch->on_port_list) {
+        ossl_list_ch_remove(&ch->port->channel_list, ch);
+        ch->on_port_list = 0;
+    }
+
+#ifndef OPENSSL_NO_QLOG
+    if (ch->qlog != NULL)
+        ossl_qlog_flush(ch->qlog); /* best effort */
+
+    OPENSSL_free(ch->qlog_title);
+    ossl_qlog_free(ch->qlog);
+#endif
+}
+
+
+

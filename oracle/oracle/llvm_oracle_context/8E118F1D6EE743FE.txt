@@ -1,0 +1,42 @@
+Instruction *SCEVExpander::getIVIncOperand(Instruction *IncV,
+                                           Instruction *InsertPos,
+                                           bool allowScale) {
+  if (IncV == InsertPos)
+    return nullptr;
+
+  switch (IncV->getOpcode()) {
+  default:
+    return nullptr;
+  // Check for a simple Add/Sub or GEP of a loop invariant step.
+  case Instruction::Add:
+  case Instruction::Sub: {
+    Instruction *OInst = dyn_cast<Instruction>(IncV->getOperand(1));
+    if (!OInst || SE.DT.dominates(OInst, InsertPos))
+      return dyn_cast<Instruction>(IncV->getOperand(0));
+    return nullptr;
+  }
+  case Instruction::BitCast:
+    return dyn_cast<Instruction>(IncV->getOperand(0));
+  case Instruction::GetElementPtr:
+    for (Use &U : llvm::drop_begin(IncV->operands())) {
+      if (isa<Constant>(U))
+        continue;
+      if (Instruction *OInst = dyn_cast<Instruction>(U)) {
+        if (!SE.DT.dominates(OInst, InsertPos))
+          return nullptr;
+      }
+      if (allowScale) {
+        // allow any kind of GEP as long as it can be hoisted.
+        continue;
+      }
+      // GEPs produced by SCEVExpander use i8 element type.
+      if (!cast<GEPOperator>(IncV)->getSourceElementType()->isIntegerTy(8))
+        return nullptr;
+      break;
+    }
+    return dyn_cast<Instruction>(IncV->getOperand(0));
+  }
+}
+
+
+

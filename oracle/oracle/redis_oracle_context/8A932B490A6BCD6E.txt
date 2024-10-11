@@ -1,0 +1,27 @@
+keyReference *getKeysPrepareResult(getKeysResult *result, int numkeys) {
+    /* GETKEYS_RESULT_INIT initializes keys to NULL, point it to the pre-allocated stack
+     * buffer here. */
+    if (!result->keys) {
+        serverAssert(!result->numkeys);
+        result->keys = result->keysbuf;
+    }
+
+    /* Resize if necessary */
+    if (numkeys > result->size) {
+        if (result->keys != result->keysbuf) {
+            /* We're not using a static buffer, just (re)alloc */
+            result->keys = zrealloc(result->keys, numkeys * sizeof(keyReference));
+        } else {
+            /* We are using a static buffer, copy its contents */
+            result->keys = zmalloc(numkeys * sizeof(keyReference));
+            if (result->numkeys)
+                memcpy(result->keys, result->keysbuf, result->numkeys * sizeof(keyReference));
+        }
+        result->size = numkeys;
+    }
+
+    return result->keys;
+}
+
+
+

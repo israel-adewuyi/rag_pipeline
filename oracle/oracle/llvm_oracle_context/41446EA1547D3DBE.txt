@@ -1,0 +1,10 @@
+  virtual bool isTruncateFree(EVT FromVT, EVT ToVT) const { return false; }
+  virtual bool isTruncateFree(LLT FromTy, LLT ToTy, const DataLayout &DL,
+
+
+inline EVT SDValue::getValueType() const {
+  return Node->getValueType(ResNo);
+}
+
+
+

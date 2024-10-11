@@ -1,0 +1,65 @@
+int SXNET_add_id_INTEGER(SXNET **psx, ASN1_INTEGER *zone, const char *user,
+                         int userlen)
+{
+    SXNET *sx = NULL;
+    SXNETID *id = NULL;
+
+    if (psx == NULL || zone == NULL || user == NULL) {
+        ERR_raise(ERR_LIB_X509V3, X509V3_R_INVALID_NULL_ARGUMENT);
+        return 0;
+    }
+    if (userlen == -1)
+        userlen = strlen(user);
+    if (userlen > 64) {
+        ERR_raise(ERR_LIB_X509V3, X509V3_R_USER_TOO_LONG);
+        return 0;
+    }
+    if (*psx == NULL) {
+        if ((sx = SXNET_new()) == NULL) {
+            ERR_raise(ERR_LIB_X509V3, ERR_R_ASN1_LIB);
+            goto err;
+        }
+        if (!ASN1_INTEGER_set(sx->version, 0)) {
+            ERR_raise(ERR_LIB_X509V3, ERR_R_ASN1_LIB);
+            goto err;
+        }
+    } else
+        sx = *psx;
+    if (SXNET_get_id_INTEGER(sx, zone)) {
+        ERR_raise(ERR_LIB_X509V3, X509V3_R_DUPLICATE_ZONE_ID);
+        if (*psx == NULL)
+            SXNET_free(sx);
+        return 0;
+    }
+
+    if ((id = SXNETID_new()) == NULL) {
+        ERR_raise(ERR_LIB_X509V3, ERR_R_ASN1_LIB);
+        goto err;
+    }
+
+    if (!ASN1_OCTET_STRING_set(id->user, (const unsigned char *)user, userlen)){
+        ERR_raise(ERR_LIB_X509V3, ERR_R_ASN1_LIB);
+        goto err;
+    }
+    if (!sk_SXNETID_push(sx->ids, id)) {
+        ERR_raise(ERR_LIB_X509V3, ERR_R_CRYPTO_LIB);
+        goto err;
+    }
+    ASN1_INTEGER_free(id->zone);
+    id->zone = zone;
+    *psx = sx;
+    return 1;
+
+ err:
+    SXNETID_free(id);
+    if (*psx == NULL)
+        SXNET_free(sx);
+    return 0;
+}
+
+
+
+IMPLEMENT_ASN1_STRING_FUNCTIONS(ASN1_INTEGER)
+IMPLEMENT_ASN1_STRING_FUNCTIONS(ASN1_ENUMERATED)
+
+

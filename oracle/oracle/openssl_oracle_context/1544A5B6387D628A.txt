@@ -1,0 +1,12 @@
+static void qrx_recycle_rxe(OSSL_QRX *qrx, RXE *rxe)
+{
+    /* RXE should not be in any list */
+    assert(ossl_list_rxe_prev(rxe) == NULL && ossl_list_rxe_next(rxe) == NULL);
+    rxe->pkt.hdr    = NULL;
+    rxe->pkt.peer   = NULL;
+    rxe->pkt.local  = NULL;
+    ossl_list_rxe_insert_tail(&qrx->rx_free, rxe);
+}
+
+
+

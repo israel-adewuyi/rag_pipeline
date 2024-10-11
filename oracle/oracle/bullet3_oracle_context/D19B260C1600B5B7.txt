@@ -1,0 +1,43 @@
+B3_FORCE_INLINE b3Scalar b3Cos(b3Scalar x) { return cosf(x); }
+B3_FORCE_INLINE b3Scalar b3Sin(b3Scalar x) { return sinf(x); }
+
+
+B3_FORCE_INLINE b3Scalar b3Sin(b3Scalar x) { return sinf(x); }
+B3_FORCE_INLINE b3Scalar b3Tan(b3Scalar x) { return tanf(x); }
+
+
+	B3_FORCE_INLINE void setValue(const b3Scalar& _x, const b3Scalar& _y, const b3Scalar& _z, const b3Scalar& _w)
+	{
+		m_floats[0] = _x;
+		m_floats[1] = _y;
+		m_floats[2] = _z;
+		m_floats[3] = _w;
+	}
+	/**@brief No initialization constructor */
+
+
+	b3Quaternion& normalize()
+	{
+#if defined(B3_USE_SSE_IN_API) && defined(B3_USE_SSE)
+		__m128 vd;
+
+		vd = _mm_mul_ps(mVec128, mVec128);
+
+		__m128 t = _mm_movehl_ps(vd, vd);
+		vd = _mm_add_ps(vd, t);
+		t = _mm_shuffle_ps(vd, vd, 0x55);
+		vd = _mm_add_ss(vd, t);
+
+		vd = _mm_sqrt_ss(vd);
+		vd = _mm_div_ss(b3vOnes, vd);
+		vd = b3_pshufd_ps(vd, 0);  // splat
+		mVec128 = _mm_mul_ps(mVec128, vd);
+
+		return *this;
+#else
+		return *this /= length();
+#endif
+	}
+
+
+

@@ -1,0 +1,23 @@
+int ossl_x509_likely_issued(X509 *issuer, X509 *subject)
+{
+    int ret;
+
+    if (X509_NAME_cmp(X509_get_subject_name(issuer),
+                      X509_get_issuer_name(subject)) != 0)
+        return X509_V_ERR_SUBJECT_ISSUER_MISMATCH;
+
+    /* set issuer->skid and subject->akid */
+    if (!ossl_x509v3_cache_extensions(issuer)
+            || !ossl_x509v3_cache_extensions(subject))
+        return X509_V_ERR_UNSPECIFIED;
+
+    ret = X509_check_akid(issuer, subject->akid);
+    if (ret != X509_V_OK)
+        return ret;
+
+    /* Check if the subject signature alg matches the issuer's PUBKEY alg */
+    return check_sig_alg_match(X509_get0_pubkey(issuer), subject);
+}
+
+
+

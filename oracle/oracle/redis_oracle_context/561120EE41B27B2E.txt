@@ -1,0 +1,45 @@
+static inline void elapsedStart(monotime *start_time) {
+    *start_time = getMonotonicUs();
+}
+
+
+
+int dictRehash(dict *d, int n) {
+    int empty_visits = n*10; /* Max number of empty buckets to visit. */
+    unsigned long s0 = DICTHT_SIZE(d->ht_size_exp[0]);
+    unsigned long s1 = DICTHT_SIZE(d->ht_size_exp[1]);
+    if (dict_can_resize == DICT_RESIZE_FORBID || !dictIsRehashing(d)) return 0;
+    /* If dict_can_resize is DICT_RESIZE_AVOID, we want to avoid rehashing. 
+     * - If expanding, the threshold is dict_force_resize_ratio which is 4.
+     * - If shrinking, the threshold is 1 / (HASHTABLE_MIN_FILL * dict_force_resize_ratio) which is 1/32. */
+    if (dict_can_resize == DICT_RESIZE_AVOID && 
+        ((s1 > s0 && s1 < dict_force_resize_ratio * s0) ||
+         (s1 < s0 && s0 < HASHTABLE_MIN_FILL * dict_force_resize_ratio * s1)))
+    {
+        return 0;
+    }
+
+    while(n-- && d->ht_used[0] != 0) {
+        /* Note that rehashidx can't overflow as we are sure there are more
+         * elements because ht[0].used != 0 */
+        assert(DICTHT_SIZE(d->ht_size_exp[0]) > (unsigned long)d->rehashidx);
+        while(d->ht_table[0][d->rehashidx] == NULL) {
+            d->rehashidx++;
+            if (--empty_visits == 0) return 1;
+        }
+        /* Move all the keys in this bucket from the old to the new hash HT */
+        rehashEntriesInBucketAtIndex(d, d->rehashidx);
+        d->rehashidx++;
+    }
+
+    return !dictCheckRehashingCompleted(d);
+}
+
+
+
+static inline uint64_t elapsedUs(monotime start_time) {
+    return getMonotonicUs() - start_time;
+}
+
+
+

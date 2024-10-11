@@ -1,0 +1,13 @@
+void ossl_quic_stream_map_visit(QUIC_STREAM_MAP *qsm,
+                                void (*visit_cb)(QUIC_STREAM *stream, void *arg),
+                                void *visit_cb_arg)
+{
+    lh_QUIC_STREAM_doall_arg(qsm->map, visit_cb, visit_cb_arg);
+}
+
+
+
+DEFINE_LHASH_OF_EX(QUIC_STREAM);
+
+
+

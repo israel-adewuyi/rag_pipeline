@@ -1,0 +1,7 @@
+void ossl_property_free(OSSL_PROPERTY_LIST *p)
+{
+    OPENSSL_free(p);
+}
+
+
+

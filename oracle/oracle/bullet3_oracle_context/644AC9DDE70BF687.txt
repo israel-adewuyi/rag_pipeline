@@ -1,0 +1,22 @@
+	SIMD_FORCE_INLINE void setValue(const btScalar& _x, const btScalar& _y, const btScalar& _z, const btScalar& _w)
+	{
+		m_floats[0] = _x;
+		m_floats[1] = _y;
+		m_floats[2] = _z;
+		m_floats[3] = _w;
+	}
+	/**@brief No initialization constructor */
+
+
+	SIMD_FORCE_INLINE const btScalar& x() const { return m_floats[0]; }
+	/**@brief Return the y value */
+
+
+	SIMD_FORCE_INLINE const btScalar& z() const { return m_floats[2]; }
+	/**@brief Return the w value */
+
+
+	SIMD_FORCE_INLINE const btScalar& y() const { return m_floats[1]; }
+	/**@brief Return the z value */
+
+

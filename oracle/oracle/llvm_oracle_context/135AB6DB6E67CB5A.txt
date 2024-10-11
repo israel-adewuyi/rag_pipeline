@@ -1,0 +1,6 @@
+VPRecipeBase *VPValue::getDefiningRecipe() {
+  return cast_or_null<VPRecipeBase>(Def);
+}
+
+
+

@@ -1,0 +1,37 @@
+static const X86FoldTableEntry *
+lookupFoldTableImpl(ArrayRef<X86FoldTableEntry> Table, unsigned RegOp) {
+#ifndef NDEBUG
+#define CHECK_SORTED_UNIQUE(TABLE)                                             \
+  assert(llvm::is_sorted(TABLE) && #TABLE " is not sorted");                   \
+  assert(std::adjacent_find(std::begin(Table), std::end(Table)) ==             \
+             std::end(Table) &&                                                \
+         #TABLE " is not unique");
+
+  // Make sure the tables are sorted.
+  static std::atomic<bool> FoldTablesChecked(false);
+  if (!FoldTablesChecked.load(std::memory_order_relaxed)) {
+    CHECK_SORTED_UNIQUE(Table2Addr)
+    CHECK_SORTED_UNIQUE(Table0)
+    CHECK_SORTED_UNIQUE(Table1)
+    CHECK_SORTED_UNIQUE(Table2)
+    CHECK_SORTED_UNIQUE(Table3)
+    CHECK_SORTED_UNIQUE(Table4)
+    CHECK_SORTED_UNIQUE(BroadcastTable1)
+    CHECK_SORTED_UNIQUE(BroadcastTable2)
+    CHECK_SORTED_UNIQUE(BroadcastTable3)
+    CHECK_SORTED_UNIQUE(BroadcastTable4)
+    CHECK_SORTED_UNIQUE(BroadcastSizeTable2)
+    CHECK_SORTED_UNIQUE(BroadcastSizeTable3)
+    FoldTablesChecked.store(true, std::memory_order_relaxed);
+  }
+#endif
+
+  const X86FoldTableEntry *Data = llvm::lower_bound(Table, RegOp);
+  if (Data != Table.end() && Data->KeyOp == RegOp &&
+      !(Data->Flags & TB_NO_FORWARD))
+    return Data;
+  return nullptr;
+}
+
+
+

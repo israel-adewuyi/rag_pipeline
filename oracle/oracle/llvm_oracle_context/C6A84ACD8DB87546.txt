@@ -1,0 +1,6 @@
+  static bool isSuffix(const SeqT &A, const SeqT &B) {
+    return A.size() <= B.size() && std::equal(A.rbegin(), A.rend(), B.rbegin());
+  }
+
+
+

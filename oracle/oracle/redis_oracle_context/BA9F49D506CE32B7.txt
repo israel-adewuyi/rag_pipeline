@@ -1,0 +1,6 @@
+static inline int defaultClientPort(void) {
+    return server.tls_cluster ? server.tls_port : server.port;
+}
+
+
+

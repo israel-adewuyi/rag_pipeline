@@ -1,0 +1,4 @@
+  bool isWindowsArm64EC() const { return TargetTriple.isWindowsArm64EC(); }
+
+
+

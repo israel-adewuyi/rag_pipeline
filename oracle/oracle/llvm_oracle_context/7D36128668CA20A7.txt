@@ -1,0 +1,73 @@
+Record *Record::getValueAsDef(StringRef FieldName) const {
+  const RecordVal *R = getValue(FieldName);
+  if (!R || !R->getValue())
+    PrintFatalError(getLoc(), "Record `" + getName() +
+      "' does not have a field named `" + FieldName + "'!\n");
+
+  if (DefInit *DI = dyn_cast<DefInit>(R->getValue()))
+    return DI->getDef();
+  PrintFatalError(getLoc(), "Record `" + getName() + "', field `" +
+    FieldName + "' does not have a def initializer!");
+}
+
+
+
+int64_t Record::getValueAsInt(StringRef FieldName) const {
+  const RecordVal *R = getValue(FieldName);
+  if (!R || !R->getValue())
+    PrintFatalError(getLoc(), "Record `" + getName() +
+      "' does not have a field named `" + FieldName + "'!\n");
+
+  if (IntInit *II = dyn_cast<IntInit>(R->getValue()))
+    return II->getValue();
+  PrintFatalError(getLoc(), Twine("Record `") + getName() + "', field `" +
+                                FieldName +
+                                "' exists but does not have an int value: " +
+                                R->getValue()->getAsString());
+}
+
+
+
+unsigned llvm::parseSDPatternOperatorProperties(Record *R) {
+  unsigned Properties = 0;
+  for (Record *Property : R->getValueAsListOfDefs("Properties")) {
+    auto Offset = StringSwitch<unsigned>(Property->getName())
+                      .Case("SDNPCommutative", SDNPCommutative)
+                      .Case("SDNPAssociative", SDNPAssociative)
+                      .Case("SDNPHasChain", SDNPHasChain)
+                      .Case("SDNPOutGlue", SDNPOutGlue)
+                      .Case("SDNPInGlue", SDNPInGlue)
+                      .Case("SDNPOptInGlue", SDNPOptInGlue)
+                      .Case("SDNPMayStore", SDNPMayStore)
+                      .Case("SDNPMayLoad", SDNPMayLoad)
+                      .Case("SDNPSideEffect", SDNPSideEffect)
+                      .Case("SDNPMemOperand", SDNPMemOperand)
+                      .Case("SDNPVariadic", SDNPVariadic)
+                      .Default(-1u);
+    if (Offset != -1u)
+      Properties |= 1 << Offset;
+    else
+      PrintFatalError(R->getLoc(), "Unknown SD Node property '" +
+                                       Property->getName() + "' on node '" +
+                                       R->getName() + "'!");
+  }
+  return Properties;
+}
+
+
+std::vector<Record*>
+Record::getValueAsListOfDefs(StringRef FieldName) const {
+  ListInit *List = getValueAsListInit(FieldName);
+  std::vector<Record*> Defs;
+  for (Init *I : List->getValues()) {
+    if (DefInit *DI = dyn_cast<DefInit>(I))
+      Defs.push_back(DI->getDef());
+    else
+      PrintFatalError(getLoc(), "Record `" + getName() + "', field `" +
+        FieldName + "' list is not entirely DefInit!");
+  }
+  return Defs;
+}
+
+
+

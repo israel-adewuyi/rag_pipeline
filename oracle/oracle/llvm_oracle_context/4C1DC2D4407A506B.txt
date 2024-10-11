@@ -1,0 +1,13 @@
+void PrintFatalError(ArrayRef<SMLoc> ErrorLoc, const Twine &Msg) {
+  PrintError(ErrorLoc, Msg);
+  // The following call runs the file cleanup handlers.
+  sys::RunInterruptHandlers();
+  std::exit(1);
+}
+
+
+
+  ArrayRef<SMLoc> getLoc() const { return Locs; }
+  void appendLoc(SMLoc Loc) { Locs.push_back(Loc); }
+
+

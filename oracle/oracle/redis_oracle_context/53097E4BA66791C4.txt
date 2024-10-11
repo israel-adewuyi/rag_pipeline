@@ -1,0 +1,37 @@
+unsigned long long int kvstoreSize(kvstore *kvs) {
+    if (kvs->num_dicts != 1) {
+        return kvs->key_count;
+    } else {
+        return kvs->dicts[0]? dictSize(kvs->dicts[0]) : 0;
+    }
+}
+
+
+
+int kvstoreFindDictIndexByKeyIndex(kvstore *kvs, unsigned long target) {
+    if (kvs->num_dicts == 1 || kvstoreSize(kvs) == 0)
+        return 0;
+    assert(target <= kvstoreSize(kvs));
+
+    int result = 0, bit_mask = 1 << kvs->num_dicts_bits;
+    for (int i = bit_mask; i != 0; i >>= 1) {
+        int current = result + i;
+        /* When the target index is greater than 'current' node value the we will update
+         * the target and search in the 'current' node tree. */
+        if (target > kvs->dict_size_index[current]) {
+            target -= kvs->dict_size_index[current];
+            result = current;
+        }
+    }
+    /* Adjust the result to get the correct dict:
+     * 1. result += 1;
+     *    After the calculations, the index of target in dict_size_index should be the next one,
+     *    so we should add 1.
+     * 2. result -= 1;
+     *    Unlike BIT(dict_size_index is 1-based), dict indices are 0-based, so we need to subtract 1.
+     * As the addition and subtraction cancel each other out, we can simply return the result. */
+    return result;
+}
+
+
+

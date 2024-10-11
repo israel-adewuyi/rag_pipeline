@@ -1,0 +1,60 @@
+void ossl_statm_get_rtt_info(OSSL_STATM *statm, OSSL_RTT_INFO *rtt_info)
+{
+    rtt_info->min_rtt           = statm->min_rtt;
+    rtt_info->latest_rtt        = statm->latest_rtt;
+    rtt_info->smoothed_rtt      = statm->smoothed_rtt;
+    rtt_info->rtt_variance      = statm->rtt_variance;
+}
+
+
+static ossl_unused ossl_inline
+OSSL_TIME ossl_time_add(OSSL_TIME a, OSSL_TIME b)
+{
+    OSSL_TIME r;
+    int err = 0;
+
+    r.t = safe_add_time(a.t, b.t, &err);
+    return err ? ossl_time_infinite() : r;
+}
+
+
+
+static ossl_unused ossl_inline
+OSSL_TIME ossl_time_max(OSSL_TIME a, OSSL_TIME b)
+{
+    return a.t > b.t ? a : b;
+}
+
+
+
+static ossl_unused ossl_inline
+OSSL_TIME ossl_time_multiply(OSSL_TIME a, uint64_t b)
+{
+    OSSL_TIME r;
+    int err = 0;
+
+    r.t = safe_mul_time(a.t, b, &err);
+    return err ? ossl_time_infinite() : r;
+}
+
+
+
+static ossl_unused ossl_inline
+OSSL_TIME ossl_ticks2time(uint64_t ticks)
+{
+    OSSL_TIME r;
+
+    r.t = ticks;
+    return r;
+}
+
+
+
+static ossl_unused ossl_inline
+int ossl_time_is_infinite(OSSL_TIME t)
+{
+    return ossl_time_compare(t, ossl_time_infinite()) == 0;
+}
+
+
+

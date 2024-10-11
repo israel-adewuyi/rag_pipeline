@@ -1,0 +1,8 @@
+  KindTy getKind() const { return Kind; }
+
+
+
+  virtual bool isContradictoryImpl(const Matcher *M) const { return false; }
+};
+
+

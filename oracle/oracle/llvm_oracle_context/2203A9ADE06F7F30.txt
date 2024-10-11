@@ -1,0 +1,27 @@
+  Record *getTransformFn() const { return TransformFn; }
+  void setTransformFn(Record *Fn) { TransformFn = Fn; }
+
+
+  void setTransformFn(Record *Fn) { TransformFn = Fn; }
+
+
+
+static TreePatternNodePtr PromoteXForms(TreePatternNodePtr N) {
+  if (Record *Xform = N->getTransformFn()) {
+    N->setTransformFn(nullptr);
+    std::vector<TreePatternNodePtr> Children;
+    Children.push_back(PromoteXForms(N));
+    return makeIntrusiveRefCnt<TreePatternNode>(Xform, std::move(Children),
+                                                N->getNumTypes());
+  }
+
+  if (!N->isLeaf())
+    for (unsigned i = 0, e = N->getNumChildren(); i != e; ++i) {
+      TreePatternNodePtr Child = N->getChildShared(i);
+      N->setChild(i, PromoteXForms(Child));
+    }
+  return N;
+}
+
+
+

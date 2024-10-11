@@ -1,0 +1,7 @@
+void *CRYPTO_THREAD_get_local(CRYPTO_THREAD_LOCAL *key)
+{
+    return pthread_getspecific(*key);
+}
+
+
+

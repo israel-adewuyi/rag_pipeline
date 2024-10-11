@@ -1,0 +1,17 @@
+redisContext *redisConnect(const char *ip, int port) {
+    redisOptions options = {0};
+    REDIS_OPTIONS_SET_TCP(&options, ip, port);
+    return redisConnectWithOptions(&options);
+}
+
+
+
+redisContext *redisConnectWithTimeout(const char *ip, int port, const struct timeval tv) {
+    redisOptions options = {0};
+    REDIS_OPTIONS_SET_TCP(&options, ip, port);
+    options.connect_timeout = &tv;
+    return redisConnectWithOptions(&options);
+}
+
+
+

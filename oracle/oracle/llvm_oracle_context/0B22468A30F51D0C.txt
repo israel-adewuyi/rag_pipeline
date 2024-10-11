@@ -1,0 +1,4 @@
+  MachineRegisterInfo &getRegInfo() { return *RegInfo; }
+  const MachineRegisterInfo &getRegInfo() const { return *RegInfo; }
+
+

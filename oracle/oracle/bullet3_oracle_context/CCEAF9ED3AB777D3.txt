@@ -1,0 +1,17 @@
+	static const btMatrix3x3& getIdentity()
+	{
+#if (defined(BT_USE_SSE_IN_API) && defined(BT_USE_SSE)) || defined(BT_USE_NEON)
+		static const btMatrix3x3
+			identityMatrix(v1000, v0100, v0010);
+#else
+		static const btMatrix3x3
+			identityMatrix(
+				btScalar(1.0), btScalar(0.0), btScalar(0.0),
+				btScalar(0.0), btScalar(1.0), btScalar(0.0),
+				btScalar(0.0), btScalar(0.0), btScalar(1.0));
+#endif
+		return identityMatrix;
+	}
+
+
+

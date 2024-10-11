@@ -1,0 +1,34 @@
+	btScalar length2() const
+	{
+		return dot(*this);
+	}
+
+
+
+	SIMD_FORCE_INLINE const btScalar& x() const { return m_floats[0]; }
+	/**@brief Return the y value */
+
+
+	SIMD_FORCE_INLINE const btScalar& y() const { return m_floats[1]; }
+	/**@brief Return the z value */
+
+
+	SIMD_FORCE_INLINE const btScalar& z() const { return m_floats[2]; }
+	/**@brief Return the w value */
+
+
+	SIMD_FORCE_INLINE const btScalar& w() const { return m_floats[3]; }
+
+
+
+	void setValue(const btScalar& xx, const btScalar& xy, const btScalar& xz,
+				  const btScalar& yx, const btScalar& yy, const btScalar& yz,
+				  const btScalar& zx, const btScalar& zy, const btScalar& zz)
+	{
+		m_el[0].setValue(xx, xy, xz);
+		m_el[1].setValue(yx, yy, yz);
+		m_el[2].setValue(zx, zy, zz);
+	}
+
+
+

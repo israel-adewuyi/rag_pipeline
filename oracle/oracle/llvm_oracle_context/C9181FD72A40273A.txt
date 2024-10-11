@@ -1,0 +1,31 @@
+std::string getDebuginfodDebuginfoUrlPath(BuildIDRef ID) {
+  SmallString<64> UrlPath;
+  sys::path::append(UrlPath, sys::path::Style::posix, "buildid",
+                    buildIDToString(ID), "debuginfo");
+  return std::string(UrlPath);
+}
+
+
+
+Expected<std::string> getCachedOrDownloadArtifact(StringRef UniqueKey,
+                                                  StringRef UrlPath) {
+  SmallString<10> CacheDir;
+
+  Expected<std::string> CacheDirOrErr = getDefaultDebuginfodCacheDirectory();
+  if (!CacheDirOrErr)
+    return CacheDirOrErr.takeError();
+  CacheDir = *CacheDirOrErr;
+
+  return getCachedOrDownloadArtifact(UniqueKey, UrlPath, CacheDir,
+                                     getDefaultDebuginfodUrls(),
+                                     getDefaultDebuginfodTimeout());
+}
+
+
+
+std::string getDebuginfodCacheKey(llvm::StringRef S) {
+  return utostr(xxh3_64bits(S));
+}
+
+
+

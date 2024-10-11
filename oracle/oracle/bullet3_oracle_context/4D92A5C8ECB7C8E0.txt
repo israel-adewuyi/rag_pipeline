@@ -1,0 +1,14 @@
+	SIMD_FORCE_INLINE btScalar length2() const
+	{
+		return dot(*this);
+	}
+
+
+
+	SIMD_FORCE_INLINE btScalar btSqrt(btScalar x)
+	{
+		return sqrt(x);
+	}
+	SIMD_FORCE_INLINE btScalar btFabs(btScalar x) { return fabs(x); }
+
+

@@ -1,0 +1,10 @@
+int ACLAddCommandCategory(const char *name, uint64_t flag) {
+    if (nextCommandCategory >= ACL_MAX_CATEGORIES) return 0;
+    ACLCommandCategories[nextCommandCategory].name = zstrdup(name);
+    ACLCommandCategories[nextCommandCategory].flag = flag != 0 ? flag : (1ULL<<nextCommandCategory);
+    nextCommandCategory++;
+    return 1;
+}
+
+
+

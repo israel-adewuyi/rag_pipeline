@@ -1,0 +1,15 @@
+const char *EVP_KEYMGMT_get0_name(const EVP_KEYMGMT *keymgmt)
+{
+    return keymgmt->type_name;
+}
+
+
+
+int EVP_KEYMGMT_is_a(const EVP_KEYMGMT *keymgmt, const char *name)
+{
+    return keymgmt != NULL
+           && evp_is_a(keymgmt->prov, keymgmt->name_id, NULL, name);
+}
+
+
+

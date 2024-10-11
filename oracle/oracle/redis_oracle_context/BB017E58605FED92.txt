@@ -1,0 +1,7 @@
+int kvstoreGetNextNonEmptyDictIndex(kvstore *kvs, int didx) {
+    unsigned long long next_key = cumulativeKeyCountRead(kvs, didx) + 1;
+    return next_key <= kvstoreSize(kvs) ? kvstoreFindDictIndexByKeyIndex(kvs, next_key) : -1;
+}
+
+
+

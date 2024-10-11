@@ -1,0 +1,16 @@
+static void free_list(QUIC_TXPIM_PKT_EX_LIST *l)
+{
+    QUIC_TXPIM_PKT_EX *n, *nnext;
+
+    for (n = l->head; n != NULL; n = nnext) {
+        nnext = n->next;
+
+        OPENSSL_free(n->chunks);
+        OPENSSL_free(n);
+    }
+
+    l->head = l->tail = NULL;
+}
+
+
+

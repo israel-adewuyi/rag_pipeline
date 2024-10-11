@@ -1,0 +1,4 @@
+  const CompMap &getComposites() const { return Composed; }
+
+
+

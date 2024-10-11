@@ -1,0 +1,24 @@
+  Record *getRecord() const { return TheRecord; }
+
+
+
+  bool isValueUnset(StringRef FieldName) const {
+    return isa<UnsetInit>(getValueInit(FieldName));
+  }
+
+
+
+Record *Record::getValueAsDef(StringRef FieldName) const {
+  const RecordVal *R = getValue(FieldName);
+  if (!R || !R->getValue())
+    PrintFatalError(getLoc(), "Record `" + getName() +
+      "' does not have a field named `" + FieldName + "'!\n");
+
+  if (DefInit *DI = dyn_cast<DefInit>(R->getValue()))
+    return DI->getDef();
+  PrintFatalError(getLoc(), "Record `" + getName() + "', field `" +
+    FieldName + "' does not have a def initializer!");
+}
+
+
+

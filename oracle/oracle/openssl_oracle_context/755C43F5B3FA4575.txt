@@ -1,0 +1,21 @@
+QUIC_PORT *ossl_quic_port_new(const QUIC_PORT_ARGS *args)
+{
+    QUIC_PORT *port;
+
+    if ((port = OPENSSL_zalloc(sizeof(QUIC_PORT))) == NULL)
+        return NULL;
+
+    port->engine        = args->engine;
+    port->channel_ctx   = args->channel_ctx;
+    port->is_multi_conn = args->is_multi_conn;
+
+    if (!port_init(port)) {
+        OPENSSL_free(port);
+        return NULL;
+    }
+
+    return port;
+}
+
+
+

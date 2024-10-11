@@ -1,0 +1,6 @@
+  BlockT *getEntry() const {
+    return RegionNodeBase<Tr>::getEntry();
+  }
+
+
+

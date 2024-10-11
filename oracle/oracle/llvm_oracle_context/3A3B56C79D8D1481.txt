@@ -1,0 +1,6 @@
+  VPValue *getSCEVExpansion(const SCEV *S) const {
+    return SCEVToExpansion.lookup(S);
+  }
+
+
+
